@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/admin/profile/mechanic_requests.dart';
-import 'package:mini_project_1/admin/profile/terms_and_co.dart';
+import 'package:mini_project_1/admin/view/profile/mechanic_requests.dart';
+import 'package:mini_project_1/admin/view/profile/terms_and_co.dart';
 import 'package:mini_project_1/admin/view/auth/login_screen.dart';
 import 'package:mini_project_1/admin/view/screens/notification_page.dart';
 import 'package:mini_project_1/common_screens/bottom_navbar_screen.dart';

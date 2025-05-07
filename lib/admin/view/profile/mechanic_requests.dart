@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/admin/profile/mechanic_request_detailspage.dart';
+import 'package:mini_project_1/admin/view/profile/mechanic_request_detailspage.dart';
 import 'package:mini_project_1/admin/view/screens/home/user_home_screen.dart';
 import 'package:mini_project_1/main.dart';
 import 'package:mini_project_1/utils/colors.dart';

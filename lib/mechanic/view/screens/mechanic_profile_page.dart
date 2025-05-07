@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/admin/profile/mechanic_requests.dart';
-import 'package:mini_project_1/admin/profile/terms_and_co.dart';
 import 'package:mini_project_1/admin/view/auth/login_screen.dart';
+import 'package:mini_project_1/admin/view/profile/terms_and_co.dart';
 import 'package:mini_project_1/admin/view/screens/notification_page.dart';
 import 'package:mini_project_1/common_screens/bottom_navbar_screen.dart';
 import 'package:mini_project_1/common_screens/toggle_button_screen.dart';
@@ -9,7 +8,7 @@ import 'package:mini_project_1/main.dart';
 import 'package:mini_project_1/mechanic/view/auth/create_account/professional_details_page.dart';
 import 'package:mini_project_1/mechanic/view/auth/mechanic_login_page.dart';
 import 'package:mini_project_1/mechanic/view/screens/Mechanic_navbar_page.dart';
-import 'package:mini_project_1/mechanic/view/screens/mechanic_details.dart';
+import 'package:mini_project_1/common_screens/profile_details.dart';
 
 class MechanicProfilePage extends StatefulWidget {
   const MechanicProfilePage({super.key});
@@ -27,7 +26,13 @@ class _MechanicProfilePageState extends State<MechanicProfilePage> {
         Icons.arrow_forward_ios_rounded,
         size: 18,
       ),
-      'page': (context) => MechanicDetails(),
+      'page': (context) => ProfileDetails(
+            name: 'No Name',
+            email: 'No Email',
+            profileUrl: '',
+            phone: '',
+            location: '',
+          ),
       'route': true,
     },
     {

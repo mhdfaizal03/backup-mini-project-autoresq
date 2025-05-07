@@ -1,17 +1,15 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mini_project_1/admin/profile/mechanic_request_detailspage.dart';
-import 'package:mini_project_1/admin/view/auth/login_screen.dart';
-import 'package:mini_project_1/admin/view/screens/wallet/wallet_tab.dart';
-import 'package:mini_project_1/common_screens/bottom_navbar_screen.dart';
 import 'package:mini_project_1/common_screens/splash_screen.dart';
-import 'package:mini_project_1/common_screens/toggle_button_screen.dart';
-import 'package:mini_project_1/mechanic/view/auth/mechanic_login_page.dart';
-import 'package:mini_project_1/mechanic/view/screens/Mechanic_Navbar_Page.dart';
+import 'package:mini_project_1/firebase_options.dart';
+import 'package:mini_project_1/user/view/auth/user_register.dart';
+import 'package:mini_project_1/user/view/screens/user_navbar_page.dart';
 
 late Size mq;
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(const MyApp());
@@ -19,8 +17,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     mq = MediaQuery.of(context).size;
@@ -39,8 +35,7 @@ class MyApp extends StatelessWidget {
               elevation: 10,
               backgroundColor: Colors.white),
           appBarTheme: AppBarTheme(backgroundColor: Colors.transparent)),
-      home: MechanicNavbarPage(),
-      // home: SplashIconScreen(),
+      home: SplashIconScreen(),
       // home: ToggleButtonScreen(),
     );
   }

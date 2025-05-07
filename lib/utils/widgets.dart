@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -663,10 +662,15 @@ void customAlertWidget(
       });
 }
 
-Widget buildLabel(String text) {
+Widget buildLabel(
+  String text,
+) {
   return Text(
     text,
-    style: TextStyle(fontSize: mq.width * .045, fontWeight: FontWeight.bold),
+    style: TextStyle(
+      fontSize: mq.width * .045,
+      fontWeight: FontWeight.bold,
+    ),
   );
 }
 
@@ -786,8 +790,8 @@ class _CustomMechaniRequestCardsState extends State<CustomMechaniRequestCards> {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       width: double.infinity,
-      duration: Duration(milliseconds: 300),
-      margin: EdgeInsets.all(5),
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(mq.width * 0.025),
         boxShadow: [
@@ -799,35 +803,48 @@ class _CustomMechaniRequestCardsState extends State<CustomMechaniRequestCards> {
         ],
         color: Colors.white,
       ),
-      padding: EdgeInsets.all(mq.width * .030),
+      padding: EdgeInsets.all(mq.width * 0.030),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// Header row with mechanic info and status
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// Mechanic info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.mechanicName.toString(),
+                      widget.mechanicName ?? 'N/A',
                       style: TextStyle(
                         fontSize: mq.width * 0.045,
                         fontWeight: FontWeight.bold,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(width: 300, child: Text(widget.place.toString())),
-                    SizedBox(height: 10),
-                    Text(widget.phoneNo.toString()),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        widget.place ?? 'Unknown',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(widget.phoneNo ?? 'No phone'),
                   ],
                 ),
               ),
-              SizedBox(width: 10),
+
+              const SizedBox(width: 10),
+
+              /// Date, Time, Status
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     widget.date,
@@ -836,7 +853,7 @@ class _CustomMechaniRequestCardsState extends State<CustomMechaniRequestCards> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
                     widget.time,
                     style: TextStyle(
@@ -844,16 +861,17 @@ class _CustomMechaniRequestCardsState extends State<CustomMechaniRequestCards> {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Container(
                     height: mq.height * 0.035,
                     padding: EdgeInsets.symmetric(horizontal: mq.width * .040),
                     decoration: BoxDecoration(
-                        color: pickColor(widget.status!),
-                        borderRadius: BorderRadius.circular(50)),
+                      color: pickColor(widget.status ?? ''),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
                     child: Center(
                       child: Text(
-                        widget.status.toString(),
+                        widget.status ?? 'Unknown',
                         style: TextStyle(
                           fontSize: mq.width * 0.040,
                           fontWeight: FontWeight.bold,
@@ -866,9 +884,10 @@ class _CustomMechaniRequestCardsState extends State<CustomMechaniRequestCards> {
               ),
             ],
           ),
-          SizedBox(
-            height: 10,
-          ),
+
+          const SizedBox(height: 10),
+
+          /// Service toggle
           InkWell(
             onTap: () {
               setState(() {
@@ -880,27 +899,30 @@ class _CustomMechaniRequestCardsState extends State<CustomMechaniRequestCards> {
                 Text(
                   'Service Requested',
                   style: TextStyle(
-                      fontSize: mq.width * .038,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor),
+                    fontSize: mq.width * .038,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
                 ),
-                SizedBox(
-                  width: 5,
-                ),
+                const SizedBox(width: 5),
                 Icon(
-                  Icons.keyboard_arrow_down_rounded,
+                  isExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
                   color: primaryColor,
-                )
+                ),
               ],
             ),
           ),
+
+          /// Expanded service list
           AnimatedSize(
-            duration: Duration(milliseconds: 100),
+            duration: const Duration(milliseconds: 200),
             curve: Curves.linear,
             child: isExpanded
                 ? Column(
                     children: [
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Wrap(
                         spacing: 5,
                         runSpacing: 5,
@@ -926,7 +948,7 @@ class _CustomMechaniRequestCardsState extends State<CustomMechaniRequestCards> {
                       ),
                     ],
                   )
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
           ),
         ],
       ),
@@ -956,6 +978,8 @@ class CustomRequestAcceptAlertDialog extends StatelessWidget {
   String date;
   String pickStatus;
   String buttonEnterText;
+  TextEditingController amountController;
+  bool isPaid;
   Function() onChooseStatusAction;
   Function() onSaveAction;
 
@@ -973,6 +997,8 @@ class CustomRequestAcceptAlertDialog extends StatelessWidget {
     required this.specificationsSelectText,
     required this.onChooseStatusAction,
     required this.onSaveAction,
+    required this.amountController,
+    required this.isPaid,
   });
 
   @override
@@ -1141,8 +1167,78 @@ class CustomRequestAcceptAlertDialog extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
+                if (pickStatus != 'No Mechanic Picked') ...[
+                  Text('Final Repair Cost'),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  CustomTextField(
+                    text: ' Enter the total repair amount',
+                    validator: (val) {
+                      if (val!.isEmpty || val == null) {
+                        return 'please enter a value to complete';
+                      }
+                      return null;
+                    },
+                    controller: amountController,
+                    readOnly: pickStatus != 'Work Completed' ? true : false,
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          height: 40,
+                          width: 100,
+                          decoration: BoxDecoration(
+                            color: !isPaid ? Colors.red : Colors.grey[200],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Unpaid',
+                              style: TextStyle(
+                                  color: !isPaid ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          height: 40,
+                          width: 100,
+                          decoration: BoxDecoration(
+                            color: isPaid ? Colors.green : Colors.grey[200],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Paid',
+                              style: TextStyle(
+                                  color: isPaid ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                ],
                 Row(
                   children: [
                     Expanded(
@@ -1197,16 +1293,180 @@ class CustomRequestAcceptAlertDialog extends StatelessWidget {
   }
 }
 
-Color? pickColor(String data) {
-  Color color;
-  data == 'No Mechanic Picked' || data == 'Pending'
-      ? color = Colors.red
-      : data == 'Mechanic Picked'
-          ? color = Colors.orange
-          : data == 'Work in Progress'
-              ? color = Colors.amber
-              : data == 'On the Way'
-                  ? color = primaryColor
-                  : color = Colors.green;
-  return color;
+class CustomUserCards extends StatelessWidget {
+  String date;
+  String address;
+  int issuescount;
+  String mechanicStatus;
+  Color? color;
+  Function() onClickViewDetails;
+  CustomUserCards(
+      {super.key,
+      required this.date,
+      required this.address,
+      required this.issuescount,
+      required this.mechanicStatus,
+      required this.color,
+      required this.onClickViewDetails});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(mq.width * 0.025),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 0.5,
+            blurRadius: 6,
+          ),
+        ],
+        color: Colors.white,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(date),
+            SizedBox(
+              height: 10,
+            ),
+            buildLabel(address),
+            SizedBox(
+              height: 10,
+            ),
+            Text(
+              '$issuescount Issues',
+              style: TextStyle(
+                color: primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                  decoration: BoxDecoration(
+                      color: color, borderRadius: BorderRadius.circular(50)),
+                  child: Center(
+                    child: Text(
+                      mechanicStatus,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: onClickViewDetails,
+                  child: Text(
+                    'View Details',
+                    style: TextStyle(
+                        color: primaryColor,
+                        decoration: TextDecoration.underline,
+                        decorationColor: primaryColor),
+                  ),
+                )
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CustomBackButton extends StatelessWidget {
+  const CustomBackButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+      },
+      child: Row(
+        children: [Icon(Icons.chevron_left_rounded), Text('Back')],
+      ),
+    );
+  }
+}
+
+void showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: primaryColor,
+                strokeWidth: 2.0,
+              ),
+              SizedBox(width: 20),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class ProfileCards extends StatelessWidget {
+  final String title;
+  final String image;
+  final Widget trialingIcon;
+
+  const ProfileCards(
+    this.trialingIcon, {
+    super.key,
+    required this.image,
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.068,
+      margin: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.circular(MediaQuery.of(context).size.width * 0.025),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 0.5,
+            blurRadius: 6,
+          ),
+        ],
+        color: Colors.white,
+      ),
+      child: Center(
+        child: ListTile(
+          title: Text(title),
+          leading: Image.asset(image, width: 30),
+          trailing: trialingIcon,
+        ),
+      ),
+    );
+  }
+}
+
+Widget customLoading() {
+  return Center(
+    child: CircularProgressIndicator(
+      color: primaryColor,
+      strokeWidth: 2.0,
+    ),
+  );
 }

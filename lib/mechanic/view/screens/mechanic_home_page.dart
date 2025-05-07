@@ -16,6 +16,7 @@ class MechanicHomePage extends StatefulWidget {
 class _MechanicHomePageState extends State<MechanicHomePage> {
   static bool isExpanded = false;
   static int selectedIndex = 0;
+  final amountController = TextEditingController();
   final List<Map<String, dynamic>> transactions = [
     {
       'mechanicName': 'AutoFix Garage',
@@ -172,6 +173,7 @@ class _MechanicHomePageState extends State<MechanicHomePage> {
       'isPaid': false,
     },
   ];
+  final formKey = GlobalKey<FormState>();
 
   List<String> status = [];
   bool isSelected = false;
@@ -197,361 +199,185 @@ class _MechanicHomePageState extends State<MechanicHomePage> {
       },
     ).toList();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5.0),
-      child: Column(
-        children: [
-          CustomToggleSwitch(
-              onToggle: (int? index) {
-                setState(() {
-                  selectedIndex = index!;
-                });
-                print(selectedIndex);
-              },
-              selectedIndex: selectedIndex,
-              labels: ['Requests', 'Accepted'],
-              switches: 2),
-          SizedBox(
-            height: 20,
-          ),
-          filterdDatas.isEmpty
-              ? Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    'No data found',
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: filterdDatas.length,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final transaction = filterdDatas[index];
-                    return InkWell(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return BackdropFilter(
+    return Form(
+      key: formKey,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5.0),
+        child: Column(
+          children: [
+            CustomToggleSwitch(
+                onToggle: (int? index) {
+                  setState(() {
+                    selectedIndex = index!;
+                  });
+                  print(selectedIndex);
+                },
+                selectedIndex: selectedIndex,
+                labels: ['Requests', 'Accepted'],
+                switches: 2),
+            SizedBox(
+              height: 20,
+            ),
+            filterdDatas.isEmpty
+                ? Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'No data found',
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: filterdDatas.length,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final transaction = filterdDatas[index];
+                      String tempPickedItem = transaction['status'];
+                      return InkWell(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return BackdropFilter(
                                 filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
                                 child: CustomRequestAcceptAlertDialog(
-                                    assignedMechanicName:
-                                        transaction['assignedMechanicName'],
-                                    buttonEnterText:
-                                        transaction['status'] == 'Pending'
-                                            ? 'Accept'
-                                            : 'Save',
-                                    date: transaction['date'],
-                                    isExpanded: isExpanded,
-                                    issueText: transaction['issueText'],
-                                    location: transaction['location'],
-                                    pickStatus:
-                                        transaction['status'] == 'Pending'
-                                            ? 'No Mechanic Picked'
-                                            : transaction['status'],
-                                    serviceLength:
-                                        transaction['services'].length,
-                                    serviceText: transaction['services'],
-                                    specificationsSelectText:
-                                        '${transaction['services'].length} Service selected',
-                                    onChooseStatusAction: () {
-                                      pickedItem = transaction['status'];
-
-                                      if (transaction['status'] != 'Pending') {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            String? tempPickedItem =
-                                                transaction['status'];
-
-                                            return StatefulBuilder(
-                                              builder:
-                                                  (context, setDialogState) {
-                                                return CustomSpecificationsDialog(
-                                                  headerItems: Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 20,
-                                                        vertical: 18),
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      child: Text(
-                                                        'Select Status',
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
+                                  isPaid: transaction['isPaid'],
+                                  amountController: amountController,
+                                  assignedMechanicName:
+                                      transaction['assignedMechanicName'],
+                                  buttonEnterText:
+                                      transaction['status'] == 'Pending'
+                                          ? 'Accept'
+                                          : 'Save',
+                                  date: transaction['date'],
+                                  isExpanded: isExpanded,
+                                  issueText: transaction['issueText'],
+                                  location: transaction['location'],
+                                  pickStatus: transaction['status'] == 'Pending'
+                                      ? 'No Mechanic Picked'
+                                      : tempPickedItem,
+                                  serviceLength: transaction['services'].length,
+                                  serviceText: transaction['services'],
+                                  specificationsSelectText:
+                                      '${transaction['services'].length} Service selected',
+                                  onChooseStatusAction: () {
+                                    if (transaction['status'] != 'Pending') {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return StatefulBuilder(
+                                            builder: (context, setDialogState) {
+                                              return CustomSpecificationsDialog(
+                                                headerItems: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 18),
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child: Text(
+                                                      'Select Status',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                   ),
-                                                  context: context,
-                                                  children: List.generate(
-                                                    selectedItems.length,
-                                                    (index) {
-                                                      final item =
-                                                          selectedItems[index];
-
-                                                      return Column(
-                                                        children: [
-                                                          Divider(),
-                                                          InkWell(
-                                                            onTap: () {
-                                                              if (item ==
-                                                                      'Work Completed' &&
-                                                                  transaction[
-                                                                          'isPaid'] !=
-                                                                      true) {
-                                                                Navigator.pop(
-                                                                    context);
-                                                                CustomSnackBar.show(
-                                                                    context:
-                                                                        context,
-                                                                    message:
-                                                                        'Cannot mark as Completed before payment.',
-                                                                    color: Colors
-                                                                        .red,
-                                                                    icon: Icons
-                                                                        .error);
-
-                                                                return;
-                                                              }
-
-                                                              setDialogState(
-                                                                  () {
+                                                ),
+                                                context: context,
+                                                children: List.generate(
+                                                  selectedItems.length,
+                                                  (index) {
+                                                    final item =
+                                                        selectedItems[index];
+                                                    return Column(
+                                                      children: [
+                                                        Divider(),
+                                                        InkWell(
+                                                          onTap: () {
+                                                            setDialogState(() {
+                                                              if (transaction[
+                                                                      'status'] !=
+                                                                  'Work Completed') {
                                                                 tempPickedItem =
-                                                                    item;
-                                                              });
-
-                                                              setDialogState(
-                                                                  () {
-                                                                transaction[
-                                                                        'status'] =
-                                                                    item;
-                                                              });
-
-                                                              Navigator.pop(
-                                                                  context);
-                                                            },
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          10),
-                                                              child: Row(
-                                                                children: [
-                                                                  Expanded(
-                                                                    child: Text(
-                                                                      item,
-                                                                      style: TextStyle(
-                                                                          color: Colors
-                                                                              .grey
-                                                                              .shade700),
-                                                                    ),
+                                                                    selectedItems[
+                                                                        index];
+                                                              }
+                                                            });
+                                                          },
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        12,
+                                                                    vertical:
+                                                                        10),
+                                                            child: Row(
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    item,
+                                                                    style: TextStyle(
+                                                                        color: Colors
+                                                                            .grey
+                                                                            .shade700),
                                                                   ),
-                                                                  Icon(
-                                                                    tempPickedItem ==
-                                                                            item
-                                                                        ? Icons
-                                                                            .radio_button_checked
-                                                                        : Icons
-                                                                            .radio_button_off,
-                                                                    color: Colors
-                                                                            .grey[
-                                                                        600],
-                                                                  ),
-                                                                ],
-                                                              ),
+                                                                ),
+                                                                Icon(
+                                                                  tempPickedItem ==
+                                                                          item
+                                                                      ? Icons
+                                                                          .radio_button_checked
+                                                                      : Icons
+                                                                          .radio_button_off,
+                                                                  color: Colors
+                                                                          .grey[
+                                                                      600],
+                                                                ),
+                                                              ],
                                                             ),
                                                           ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  ),
-                                                  actionButton: MaterialButton(
-                                                    height: 60,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        bottomLeft:
-                                                            Radius.circular(10),
-                                                        bottomRight:
-                                                            Radius.circular(10),
-                                                      ),
-                                                    ),
-                                                    minWidth: double.infinity,
-                                                    color: Colors.blue[500],
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: Text(
-                                                      'Close',
-                                                      style: TextStyle(
-                                                          color: Colors.white),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                ),
+                                                actionButton: MaterialButton(
+                                                  height: 60,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                      bottomLeft:
+                                                          Radius.circular(10),
+                                                      bottomRight:
+                                                          Radius.circular(10),
                                                     ),
                                                   ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                        );
-                                      }
-                                    },
-                                    // onChooseStatusAction: () {
-                                    //   pickedItem = transaction['status'];
-
-                                    //   if (transaction['status'] != 'Pending') {
-                                    //     showDialog(
-                                    //       context: context,
-                                    //       builder: (context) {
-                                    //         String? tempPickedItem =
-                                    //             transaction['status'];
-                                    //         return StatefulBuilder(
-                                    //           builder: (context, setDialogState) {
-                                    //             return CustomSpecificationsDialog(
-                                    //               headerItems: Padding(
-                                    //                 padding: const EdgeInsets
-                                    //                     .symmetric(
-                                    //                     horizontal: 20,
-                                    //                     vertical: 18),
-                                    //                 child: Align(
-                                    //                   alignment:
-                                    //                       Alignment.centerLeft,
-                                    //                   child: Text(
-                                    //                     'Select Status',
-                                    //                     style: TextStyle(
-                                    //                         fontWeight:
-                                    //                             FontWeight.bold),
-                                    //                   ),
-                                    //                 ),
-                                    //               ),
-                                    //               context: context,
-                                    //               children: List.generate(
-                                    //                 selectedItems.length,
-                                    //                 (index) {
-                                    //                   final item =
-                                    //                       selectedItems[index];
-
-                                    //                   return Column(
-                                    //                     children: [
-                                    //                       Divider(),
-                                    //                       InkWell(
-                                    //                         onTap: () {
-                                    //                           if (item ==
-                                    //                                   'Work Completed' &&
-                                    //                               transaction[
-                                    //                                       'isPaid'] !=
-                                    //                                   true) {
-                                    //                             Navigator.pop(
-                                    //                                 context);
-                                    //                             Navigator.pop(
-                                    //                                 context);
-                                    //                             ScaffoldMessenger
-                                    //                                     .of(context)
-                                    //                                 .showSnackBar(
-                                    //                               SnackBar(
-                                    //                                 behavior:
-                                    //                                     SnackBarBehavior
-                                    //                                         .floating,
-                                    //                                 margin:
-                                    //                                     EdgeInsets
-                                    //                                         .all(
-                                    //                                             20),
-                                    //                                 content: Text(
-                                    //                                     'Cannot mark as Completed before payment.'),
-                                    //                                 backgroundColor:
-                                    //                                     Colors
-                                    //                                         .red,
-                                    //                               ),
-                                    //                             );
-                                    //                             return;
-                                    //                           }
-
-                                    //                           setDialogState(() {
-                                    //                             tempPickedItem =
-                                    //                                 item;
-                                    //                           });
-
-                                    //                           setState(() {
-                                    //                             transaction[
-                                    //                                     'status'] =
-                                    //                                 item;
-                                    //                           });
-                                    //                         },
-                                    //                         child: Padding(
-                                    //                           padding:
-                                    //                               const EdgeInsets
-                                    //                                   .symmetric(
-                                    //                                   horizontal:
-                                    //                                       12,
-                                    //                                   vertical:
-                                    //                                       10),
-                                    //                           child: Row(
-                                    //                             children: [
-                                    //                               Expanded(
-                                    //                                 child: Text(
-                                    //                                   item,
-                                    //                                   style: TextStyle(
-                                    //                                       color: Colors
-                                    //                                           .grey[700]),
-                                    //                                 ),
-                                    //                               ),
-                                    //                               Icon(
-                                    //                                 tempPickedItem ==
-                                    //                                         item
-                                    //                                     ? Icons
-                                    //                                         .radio_button_checked
-                                    //                                     : Icons
-                                    //                                         .radio_button_off,
-                                    //                                 color: Colors
-                                    //                                         .grey[
-                                    //                                     600],
-                                    //                               ),
-                                    //                             ],
-                                    //                           ),
-                                    //                         ),
-                                    //                       ),
-                                    //                     ],
-                                    //                   );
-                                    //                 },
-                                    //               ),
-                                    //               actionButton: MaterialButton(
-                                    //                 height: 60,
-                                    //                 shape: RoundedRectangleBorder(
-                                    //                   borderRadius:
-                                    //                       BorderRadius.only(
-                                    //                     bottomLeft:
-                                    //                         Radius.circular(10),
-                                    //                     bottomRight:
-                                    //                         Radius.circular(10),
-                                    //                   ),
-                                    //                 ),
-                                    //                 minWidth: double.infinity,
-                                    //                 color: Colors.blue[500],
-                                    //                 onPressed: () {
-                                    //                   setDialogState((){
-
-                                    //                   });
-                                    //                 },
-                                    //                 child: Text(
-                                    //                   'Save',
-                                    //                   style: TextStyle(
-                                    //                       color: Colors.white),
-                                    //                 ),
-                                    //               ),
-                                    //             );
-                                    //           },
-                                    //         );
-                                    //       },
-                                    //     );
-                                    //   }
-                                    // },
-                                    onSaveAction: () {
+                                                  minWidth: double.infinity,
+                                                  color: Colors.blue[500],
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      transaction['status'] =
+                                                          tempPickedItem;
+                                                    });
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: Text(
+                                                    'Done',
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      );
+                                    }
+                                  },
+                                  onSaveAction: () {
+                                    if (formKey.currentState!.validate()) {
                                       Navigator.pop(context);
                                       CustomSnackBar.show(
                                         context: context,
@@ -559,23 +385,27 @@ class _MechanicHomePageState extends State<MechanicHomePage> {
                                         color: Colors.green,
                                         icon: Icons.check_circle,
                                       );
-                                    }));
-                          },
-                        );
-                      },
-                      child: CustomMechaniRequestCards(
-                        mechanicName: transaction['mechanicName'],
-                        status: transaction['status'],
-                        date: transaction['date'],
-                        time: transaction['time'],
-                        phoneNo: transaction['phoneNo'].toString(),
-                        place: transaction['place'],
-                        services: transaction['services'],
-                      ),
-                    );
-                  },
-                ),
-        ],
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        child: CustomMechaniRequestCards(
+                          mechanicName: transaction['mechanicName'],
+                          status: transaction['status'],
+                          date: transaction['date'],
+                          time: transaction['time'],
+                          phoneNo: transaction['phoneNo'].toString(),
+                          place: transaction['place'],
+                          services: transaction['services'],
+                        ),
+                      );
+                    },
+                  ),
+          ],
+        ),
       ),
     );
   }

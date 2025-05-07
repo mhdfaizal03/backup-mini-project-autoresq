@@ -229,11 +229,6 @@ class _ProfessionalDetailsPageState extends State<ProfessionalDetailsPage> {
                                                       fontWeight:
                                                           FontWeight.bold),
                                                 ),
-                                                Text(
-                                                  '(Max 6)',
-                                                  style: TextStyle(
-                                                      color: Colors.red),
-                                                ),
                                               ],
                                             ),
                                           ),
@@ -260,9 +255,7 @@ class _ProfessionalDetailsPageState extends State<ProfessionalDetailsPage> {
                                                           if (isSelected) {
                                                             selectedItems
                                                                 .remove(item);
-                                                          } else if (selectedItems
-                                                                  .length <
-                                                              6) {
+                                                          } else {
                                                             selectedItems
                                                                 .add(item);
                                                           }

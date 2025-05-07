@@ -1,29 +1,37 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/mechanic/view/screens/mechanic_home_page.dart';
-import 'package:mini_project_1/mechanic/view/screens/mechanic_notification_page.dart';
-import 'package:mini_project_1/mechanic/view/screens/mechanic_profile_page.dart';
+import 'package:mini_project_1/user/view/screens/user_home_page.dart';
+import 'package:mini_project_1/user/view/screens/user_notification.dart';
+import 'package:mini_project_1/user/view/screens/user_profile.dart';
+import 'package:mini_project_1/user/view/screens/user_create_requests_page.dart';
+import 'package:mini_project_1/user/view/screens/user_shop.dart';
 import 'package:mini_project_1/utils/colors.dart';
 
-class MechanicNavbarPage extends StatefulWidget {
-  int? selectedIndex = 0;
-  MechanicNavbarPage({this.selectedIndex, super.key});
+class UserNavPage extends StatefulWidget {
+  int? selectedIndex;
+  UserNavPage({this.selectedIndex = 0, super.key});
 
   @override
-  State<MechanicNavbarPage> createState() => _MechanicNavbarPageState();
+  State<UserNavPage> createState() => _UserNavPageState();
 }
 
-class _MechanicNavbarPageState extends State<MechanicNavbarPage> {
+class _UserNavPageState extends State<UserNavPage> {
   List<Widget> pages = [
-    MechanicHomePage(),
-    MechanicNotificationPage(),
-    MechanicProfilePage(),
+    UserHomePage(),
+    UserShop(),
+    UserNotification(),
+    UserProfile(),
   ];
+
+  // int selectedIndex = 0;
 
   List<Map<String, dynamic>> bottomIcons = [
     {
-      'selected': 'assets/nav_icons/home_selected.png',
-      'unselected': 'assets/nav_icons/home_unselected.png',
+      'selected': 'assets/nav_icons/warning_selected.png',
+      'unselected': 'assets/nav_icons/warning_unselected.png',
+    },
+    {
+      'selected': 'assets/nav_icons/shop_selected.png',
+      'unselected': 'assets/nav_icons/shop_unselected.png',
     },
     {
       'selected': 'assets/nav_icons/notification_selected.png',
@@ -38,6 +46,29 @@ class _MechanicNavbarPageState extends State<MechanicNavbarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: widget.selectedIndex == 0
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0),
+              child: MaterialButton(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => UserCreateRequestsPage()));
+                },
+                color: primaryColor,
+                height: 55,
+                minWidth: double.infinity,
+                child: Text(
+                  'Create a request',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            )
+          : SizedBox.shrink(),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: <BoxShadow>[
@@ -66,10 +97,12 @@ class _MechanicNavbarPageState extends State<MechanicNavbarPage> {
                   width: 30,
                 ),
                 label: index == 0
-                    ? 'Home'
+                    ? 'Requests'
                     : index == 1
-                        ? 'Notification'
-                        : 'Profile',
+                        ? 'Shop'
+                        : index == 2
+                            ? 'Notification'
+                            : 'Profile',
                 icon: Image.asset(
                   bottomIcons[index]['unselected'],
                   width: 30,

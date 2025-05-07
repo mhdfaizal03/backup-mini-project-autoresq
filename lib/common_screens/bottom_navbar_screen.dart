@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mini_project_1/admin/view/profile/profile_screen.dart';
 import 'package:mini_project_1/admin/view/screens/home/mechanic_home_screen.dart';
 import 'package:mini_project_1/admin/view/screens/notification_page.dart';
 import 'package:mini_project_1/admin/view/screens/wallet/wallet_tab.dart';
-import 'package:mini_project_1/admin/profile/profile_screen.dart';
 import 'package:mini_project_1/common_screens/toggle_button_screen.dart';
 import 'package:mini_project_1/main.dart';
 import 'package:mini_project_1/utils/colors.dart';
@@ -66,6 +66,8 @@ class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
           ],
         ),
         child: BottomNavigationBar(
+          selectedItemColor: primaryColor,
+          type: BottomNavigationBarType.fixed,
           selectedLabelStyle: TextStyle(color: primaryColor),
           currentIndex: widget.selectedIndex ?? 0,
           onTap: (value) {
@@ -74,7 +76,7 @@ class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
             });
           },
           items: List.generate(
-            3,
+            bottomIcons.length,
             (index) {
               return BottomNavigationBarItem(
                 activeIcon: Image.asset(
