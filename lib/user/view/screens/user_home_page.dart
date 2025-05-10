@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mini_project_1/admin/view/screens/home/user_home_screen.dart';
 import 'package:mini_project_1/main.dart';
+import 'package:mini_project_1/all_auth_services/model/user_create_request_model.dart';
 import 'package:mini_project_1/utils/colors.dart';
 import 'package:mini_project_1/utils/messages.dart';
+import 'package:mini_project_1/utils/time_and_date_formats.dart';
 import 'package:mini_project_1/utils/widgets.dart';
 
 class UserHomePage extends StatefulWidget {
@@ -19,54 +21,16 @@ class UserHomePage extends StatefulWidget {
 
 class _UserHomePageState extends State<UserHomePage> {
   int selectIndex = 0;
-  List<String> tabs = ['Rejected', 'Completed'];
-
-  // final List<Map<String, dynamic>> transactions = [
-  //   {
-  //     'name': 'John Doe',
-  //     'date': 'April 2, 2025',
-  //     'mechName': 'Johnson',
-  //     'address': '4517 Washington Ave. Manchester, Kentucky 39495',
-  //     'status': 'Mechanic Picked',
-  //     'phone': '+91 1234567890',
-  //     'countof_issues': 6,
-  //   },
-  //   {
-  //     'name': 'John Dany',
-  //     'date': 'April 2, 2025',
-  //     'mechName': 'Bosco',
-  //     'address': '4517 Washington Ave. Manchester, Kentucky 39495',
-  //     'status': 'Completed',
-  //     'phone': '+91 1234567890',
-  //     'countof_issues': 6,
-  //   },
-  //   {
-  //     'name': 'John Doe',
-  //     'date': 'April 2, 2025',
-  //     'mechName': 'Helsinki',
-  //     'address': '4517 Washington Ave. Manchester, Kentucky 39495',
-  //     'status': 'Requested',
-  //     'mechnicStatus': 'No Mechanic Picked',
-  //     'phone': '+91 1234567890',
-  //     'countof_issues': 6,
-  //   },
-  //   {
-  //     'name': 'John Doe',
-  //     'date': 'April 2, 2025',
-  //     'mechName': 'Luna',
-  //     'address': '4517 Washington Ave. Manchester, Kentucky 39495',
-  //     'status': 'Requested',
-  //     'mechnicStatus': 'Requested',
-  //     'phone': '+91 1234567890',
-  //     'countof_issues': 6,
-  //   },
-  // ];
+  List<String> tabs = ['Requested', 'Completed & Rejected'];
 
   @override
   Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context).size;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Tab navigation bar
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -97,16 +61,17 @@ class _UserHomePageState extends State<UserHomePage> {
                             selectIndex == index ? primaryColor : Colors.white,
                       ),
                       child: Center(
-                          child: Text(
-                        tabs[index],
-                        style: TextStyle(
-                          color: selectIndex == index
-                              ? Colors.white
-                              : Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                        child: Text(
+                          tabs[index],
+                          style: TextStyle(
+                            color: selectIndex == index
+                                ? Colors.white
+                                : Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
-                      )),
+                      ),
                     ),
                   ),
                 ),
@@ -114,10 +79,10 @@ class _UserHomePageState extends State<UserHomePage> {
             },
           ),
         ),
-        SizedBox(
-          height: 10,
-        ),
-        StreamBuilder(
+        const SizedBox(height: 10),
+
+        // StreamBuilder for requests
+        StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('mechanic_requests')
               .orderBy('createdAt', descending: true)
@@ -125,37 +90,36 @@ class _UserHomePageState extends State<UserHomePage> {
           builder: (context, snapshot) {
             if (!snapshot.hasData) return Center(child: customLoading());
 
-            final requests = snapshot.data!.docs;
+            final requests = snapshot.data!.docs
+                .map((doc) => UserCreateRequestModel.fromMap(
+                    doc.data() as Map<String, dynamic>))
+                .where((req) => selectIndex == 0
+                    ? req.status == 'Requested'
+                    : req.status != 'Requested')
+                .toList();
 
-            final filtered = requests.where((doc) {
-              final status = doc['status'];
-              return selectIndex == 0
-                  ? status == 'Requested'
-                  : status == 'Completed' || status == 'Rejected';
-            }).toList();
-
-            return filtered.isEmpty
+            return requests.isEmpty
                 ? Center(
                     child: Text(
                       'No ${tabs[selectIndex]} transactions found',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      style: const TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                   )
                 : ListView.builder(
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: filtered.length,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: requests.length,
                     itemBuilder: (context, index) {
-                      final req = filtered[index];
+                      final req = requests[index];
 
                       return CustomUserCards(
-                        color: pickColor(req['status']),
-                        date: timeFormatter(req['createdAt']),
-                        address: req['location'],
-                        issuescount: (req['specializations'] as List).length,
-                        mechanicStatus: req['status'] == 'Requested'
-                            ? 'No Mechanic Picked '
-                            : req['mechName'],
+                        color: pickColor(req.status),
+                        date: req.time,
+                        address: req.location,
+                        issuescount: req.services.length,
+                        mechanicStatus: req.status == 'Requested'
+                            ? 'No Mechanic Picked'
+                            : req.status ?? 'N/A',
                         onClickViewDetails: () {
                           showDialog(
                             context: context,
@@ -170,92 +134,70 @@ class _UserHomePageState extends State<UserHomePage> {
                                   backgroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10)),
-                                  content: StatefulBuilder(
-                                    builder: (context, setDialogState) {
-                                      final String location =
-                                          req['location'] ?? 'N/A';
-                                      final List<dynamic> specs =
-                                          req['specializations'] ?? [];
-                                      final String description =
-                                          req['description'] ?? 'N/A';
-                                      final String status = req['status'];
-                                      final String requestedOn =
-                                          timeFormatter(req['createdAt']);
-                                      final String mechName =
-                                          req['status'] == 'Requested'
-                                              ? 'No one is take the work'
-                                              : req['mechName'] ?? 'N/A';
-
-                                      return Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text('Breakdown Location'),
-                                          Text(
-                                            location,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          const Text('Issue'),
-                                          Text(
-                                            '${specs.length} Issues selected',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: primaryColor,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          const Text('Issue Description'),
-                                          buildLabel(description),
-                                          const SizedBox(height: 10),
-                                          const Text('Assigned Mechanic'),
-                                          buildLabel(status == 'Requested'
-                                              ? 'No one has accepted the work'
-                                              : 'Work Picked by $mechName'),
-                                          const SizedBox(height: 10),
-                                          const Text('Requested On'),
-                                          buildLabel(requestedOn),
-                                          const SizedBox(height: 10),
-                                          const Text('Status'),
-                                          Text(
-                                            status == 'Requested'
-                                                ? 'No Mechanic Picked'
-                                                : status,
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: pickColor(status),
-                                            ),
-                                          ),
-                                          if (status == 'Requested') ...[
-                                            const Text(
-                                              '(Waiting for a mechanic to accept your request.)',
-                                              style: TextStyle(
-                                                  fontStyle: FontStyle.italic),
-                                            ),
-                                          ],
-                                          const SizedBox(height: 20),
-                                          MaterialButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            height: 50,
-                                            minWidth: double.infinity,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            color: Colors.red,
-                                            child: const Text(
-                                              'Close',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('Breakdown Location'),
+                                      Text(req.location,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 10),
+                                      const Text('Issue'),
+                                      Text(
+                                        '${req.services.length} Issues selected',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      const Text('Issue Description'),
+                                      buildLabel(req.description ?? 'N/A'),
+                                      const SizedBox(height: 10),
+                                      const Text('Assigned Mechanic'),
+                                      buildLabel(req.status == 'Requested'
+                                          ? 'No one has accepted the work'
+                                          : 'Work Picked by ${req.assignedMechanicName ?? 'N/A'}'),
+                                      const SizedBox(height: 10),
+                                      const Text('Requested On'),
+                                      buildLabel(req.date),
+                                      const SizedBox(height: 10),
+                                      const Text('Status'),
+                                      Text(
+                                        req.status == 'Requested'
+                                            ? 'No Mechanic Picked'
+                                            : req.status,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: pickColor(req.status),
+                                        ),
+                                      ),
+                                      if (req.status == 'Requested') ...[
+                                        const Text(
+                                          '(Waiting for a mechanic to accept your request.)',
+                                          style: TextStyle(
+                                              fontStyle: FontStyle.italic),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 20),
+                                      MaterialButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        height: 50,
+                                        minWidth: double.infinity,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        color: Colors.red,
+                                        child: const Text(
+                                          'Close',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               );
@@ -267,21 +209,8 @@ class _UserHomePageState extends State<UserHomePage> {
                   );
           },
         ),
-        SizedBox(
-          height: 80,
-        )
+        const SizedBox(height: 80),
       ],
     );
   }
-}
-
-String timeFormatter(dynamic data) {
-  if (data != null) {
-    try {
-      return DateFormat('MMMM d, y').format(data.toDate());
-    } catch (e) {
-      return '';
-    }
-  }
-  return '';
 }

@@ -15,6 +15,7 @@ class CustomTextField extends StatelessWidget {
   int? maxLines;
   Widget? suffix;
   bool readOnly;
+  TextInputType keyBoardType;
   CustomTextField({
     super.key,
     this.text,
@@ -25,11 +26,13 @@ class CustomTextField extends StatelessWidget {
     this.suffix = null,
     this.readOnly = false,
     this.onChanged,
+    this.keyBoardType = TextInputType.text,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      keyboardType: keyBoardType,
       onChanged: onChanged,
       readOnly: readOnly,
       maxLines: maxLines,
@@ -759,17 +762,17 @@ class CustomSpecificationsDialog extends StatelessWidget {
 }
 
 class CustomMechaniRequestCards extends StatefulWidget {
-  final String? mechanicName;
+  final String? userName;
   final String? place;
   final String? phoneNo;
   final String? status;
   final String date;
   final String time;
-  final List<String> services;
+  final List<dynamic> services;
 
   const CustomMechaniRequestCards({
     super.key,
-    required this.mechanicName,
+    required this.userName,
     required this.place,
     required this.phoneNo,
     required this.status,
@@ -818,7 +821,7 @@ class _CustomMechaniRequestCardsState extends State<CustomMechaniRequestCards> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.mechanicName ?? 'N/A',
+                      widget.userName ?? 'N/A',
                       style: TextStyle(
                         fontSize: mq.width * 0.045,
                         fontWeight: FontWeight.bold,
@@ -1039,7 +1042,7 @@ class CustomRequestAcceptAlertDialog extends StatelessWidget {
                     });
                   },
                   child: Container(
-                    width: double.infinity,
+                    width: MediaQuery.of(context).size.width,
                     padding: EdgeInsets.symmetric(vertical: 5),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -1117,7 +1120,7 @@ class CustomRequestAcceptAlertDialog extends StatelessWidget {
                 ),
                 Text('Assigned Mechanic'),
                 Text(
-                  assignedMechanicName.toString(),
+                  'Your Mechanic Name ${assignedMechanicName.toString()}',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
@@ -1183,7 +1186,7 @@ class CustomRequestAcceptAlertDialog extends StatelessWidget {
                       return null;
                     },
                     controller: amountController,
-                    readOnly: pickStatus != 'Work Completed' ? true : false,
+                    readOnly: isPaid ? true : false,
                   ),
                   SizedBox(
                     height: 10,
@@ -1456,6 +1459,110 @@ class ProfileCards extends StatelessWidget {
           title: Text(title),
           leading: Image.asset(image, width: 30),
           trailing: trialingIcon,
+        ),
+      ),
+    );
+  }
+}
+
+class ShopCards extends StatelessWidget {
+  String? productName;
+  String? productPrice;
+  String? productQuantity;
+  String? productImage;
+  String? deliveryDate;
+  String? deliveryStatus;
+  Color? deliveryStatusColor;
+
+  ShopCards({
+    super.key,
+    required this.productName,
+    required this.productPrice,
+    required this.productImage,
+    required this.productQuantity,
+    required this.deliveryDate,
+    required this.deliveryStatus,
+    required this.deliveryStatusColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.white,
+          boxShadow: [BoxShadow(blurRadius: 1.5, color: Colors.grey)]),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(blurRadius: 1.5, color: Colors.grey)
+                    ]),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    'https://5.imimg.com/data5/SELLER/Default/2023/10/349750049/RC/TP/ZK/87613070/1-500x500.jpg',
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              flex: 5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                      text: TextSpan(
+                          style: TextStyle(fontFamily: 'Poppins'),
+                          children: [
+                        TextSpan(
+                            text: 'Status | ',
+                            style: TextStyle(color: Colors.grey)),
+                        TextSpan(
+                            text: deliveryStatus.toString(),
+                            style: TextStyle(color: deliveryStatusColor)),
+                      ])),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${productName.toString()} (${productQuantity.toString()})',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        productName.toString(),
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text(
+                        '₹${productPrice.toString()}',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    'Delivery in ${deliveryDate.toString()}',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            )
+          ],
         ),
       ),
     );

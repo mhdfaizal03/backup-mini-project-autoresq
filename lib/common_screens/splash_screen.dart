@@ -1,7 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/user/view/auth/user_login.dart';
+
+import 'package:mini_project_1/auth_pages/multi_login.dart';
+import 'package:mini_project_1/mechanic/view/auth/create_account/professional_details_page.dart';
+import 'package:mini_project_1/shop/screens/shop_home.dart';
+import 'package:mini_project_1/shop/screens/shop_navbar_page.dart';
 import 'package:mini_project_1/user/view/screens/user_navbar_page.dart';
+import 'package:mini_project_1/mechanic/view/screens/mechanic_navbar_page.dart';
 
 class SplashIconScreen extends StatefulWidget {
   const SplashIconScreen({super.key});
@@ -86,11 +92,30 @@ class _SplashInnerScreenState extends State<SplashInnerScreen> {
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
 
-    try {
-      final user = _auth.currentUser;
+    final user = _auth.currentUser;
+    if (user == null) {
+      // Not logged in
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 1500),
+          pageBuilder: (_, __, ___) => MultiLoginPage(),
+        ),
+        (route) => false,
+      );
+      return;
+    }
 
-      if (user != null) {
-        // Navigate to home
+    try {
+      final uid = user.uid;
+      final firestore = FirebaseFirestore.instance;
+
+      final userDoc = await firestore.collection('users').doc(uid).get();
+      final mechanicDoc =
+          await firestore.collection('mechanics').doc(uid).get();
+      final shopDoc = await firestore.collection('shops').doc(uid).get();
+
+      if (userDoc.exists && userDoc.data()?['role'] == 'User') {
         Navigator.pushAndRemoveUntil(
           context,
           PageRouteBuilder(
@@ -99,20 +124,54 @@ class _SplashInnerScreenState extends State<SplashInnerScreen> {
           ),
           (route) => false,
         );
-      } else {
-        // Navigate to login
+      } else if (mechanicDoc.exists &&
+          mechanicDoc.data()?['role'] == 'Mechanic') {
+        final isCompleted =
+            mechanicDoc.data()?['professionalDataCompleted'] ?? false;
+
+        if (isCompleted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 1500),
+              pageBuilder: (_, __, ___) => MechanicNavbarPage(selectedIndex: 0),
+            ),
+            (route) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 1500),
+              pageBuilder: (_, __, ___) => ProfessionalDetailsPage(),
+            ),
+            (route) => false,
+          );
+        }
+      } else if (shopDoc.exists && shopDoc.data()?['role'] == 'Shop') {
         Navigator.pushAndRemoveUntil(
           context,
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 1500),
-            pageBuilder: (_, __, ___) => const UserLogin(),
+            pageBuilder: (_, __, ___) => ShopNavbarPage(),
           ),
+          (route) => false,
+        );
+      } else {
+        // Unknown role or data missing
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => MultiLoginPage()),
           (route) => false,
         );
       }
     } catch (e) {
-      // Handle error if needed
-      debugPrint('Error during auth check: $e');
+      debugPrint('Role check error: $e');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => MultiLoginPage()),
+        (route) => false,
+      );
     }
   }
 

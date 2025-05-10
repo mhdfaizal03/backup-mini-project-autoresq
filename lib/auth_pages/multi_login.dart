@@ -1,24 +1,106 @@
-import 'package:flutter/gestures.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/common_screens/bottom_navbar_screen.dart';
-import 'package:mini_project_1/mechanic/view/auth/mechanic_register_page.dart';
-import 'package:mini_project_1/mechanic/view/screens/Mechanic_Navbar_Page.dart';
+import 'package:mini_project_1/all_auth_services/firebase_auth_services.dart';
+import 'package:mini_project_1/auth_pages/multi_register.dart';
+import 'package:mini_project_1/mechanic/view/auth/create_account/professional_details_page.dart';
+import 'package:mini_project_1/mechanic/view/screens/mechanic_home_page.dart';
+import 'package:mini_project_1/shop/screens/shop_home.dart';
+import 'package:mini_project_1/shop/screens/shop_navbar_page.dart';
+import 'package:mini_project_1/user/view/screens/user_navbar_page.dart';
+import 'package:mini_project_1/mechanic/view/screens/mechanic_navbar_page.dart';
 import 'package:mini_project_1/utils/colors.dart';
-import 'package:mini_project_1/utils/messages.dart';
 import 'package:mini_project_1/utils/widgets.dart';
-import 'package:mini_project_1/common_screens/toggle_button_screen.dart';
+import 'package:mini_project_1/utils/messages.dart';
 
-class ShopLogin extends StatefulWidget {
-  const ShopLogin({super.key});
-
+class MultiLoginPage extends StatefulWidget {
   @override
-  State<ShopLogin> createState() => _ShopLoginState();
+  _MultiLoginPageState createState() => _MultiLoginPageState();
 }
 
-class _ShopLoginState extends State<ShopLogin> {
+class _MultiLoginPageState extends State<MultiLoginPage> {
+  final authService = FirebaseAuthServices();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+
+  void login() async {
+    if (formKey.currentState!.validate()) {
+      showLoadingDialog(context);
+
+      final error = await authService.loginUser(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      Navigator.pop(context);
+
+      if (error == null) {
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid == null) {
+          CustomSnackBar.show(
+            context: context,
+            message: "User ID not found after login.",
+            icon: Icons.error,
+          );
+          return;
+        }
+
+        final role = await authService.getUserRole(uid);
+
+        if (role == 'Mechanic') {
+          final doc = await FirebaseFirestore.instance
+              .collection('mechanics')
+              .doc(uid)
+              .get();
+
+          final isProfessionalDataCompleted =
+              doc.exists && doc.data()?['professionalDataCompleted'] == true;
+          print(
+              "professionalDataCompleted: ${doc.data()?['professionalDataCompleted']}");
+
+          if (isProfessionalDataCompleted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => MechanicNavbarPage()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => ProfessionalDetailsPage()),
+            );
+          }
+        } else if (role == 'Shop') {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => ShopNavbarPage()));
+        } else if (role == 'User') {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => UserNavPage()));
+        } else {
+          CustomSnackBar.show(
+            context: context,
+            message: "Unknown or missing role. Contact admin.",
+            icon: Icons.warning_amber_rounded,
+          );
+        }
+
+        CustomSnackBar.show(
+          context: context,
+          message: 'Login Successful',
+          icon: Icons.check_circle_outline_rounded,
+          color: Colors.green,
+        );
+      } else {
+        CustomSnackBar.show(
+          context: context,
+          message: error,
+          icon: Icons.error,
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +152,7 @@ class _ShopLoginState extends State<ShopLogin> {
                           height: 10,
                         ),
                         CustomTextField(
+                          keyBoardType: TextInputType.emailAddress,
                           controller: _emailController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -99,6 +182,7 @@ class _ShopLoginState extends State<ShopLogin> {
                           height: 10,
                         ),
                         CustomTextField(
+                          keyBoardType: TextInputType.visiblePassword,
                           controller: _passwordController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -130,18 +214,7 @@ class _ShopLoginState extends State<ShopLogin> {
                       ],
                     ),
                     CustomMaterialButtom(
-                        onPressed: () {
-                          if (formKey.currentState!.validate()) {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MechanicNavbarPage(),
-                              ),
-                              (route) => false,
-                            );
-                          }
-                        },
-                        buttonText: 'Sign in'),
+                        onPressed: login, buttonText: 'Sign in'),
                     CustomRickText(
                         firstText: 'Don’t have an account? ',
                         secondText: 'Sign Up',
@@ -149,7 +222,7 @@ class _ShopLoginState extends State<ShopLogin> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => MechanicRegisterPage(),
+                                builder: (context) => MultiRoleRegisterPage(),
                               ));
                         }),
                   ],

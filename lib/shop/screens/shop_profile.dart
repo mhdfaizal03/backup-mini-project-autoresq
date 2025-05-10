@@ -17,20 +17,20 @@ import 'package:mini_project_1/utils/messages.dart';
 import 'package:mini_project_1/utils/widgets.dart';
 import 'package:shimmer/shimmer.dart';
 
-class MechanicProfilePage extends StatefulWidget {
-  const MechanicProfilePage({super.key});
+class ShopProfile extends StatefulWidget {
+  const ShopProfile({super.key});
 
   @override
-  State<MechanicProfilePage> createState() => _MechanicProfilePageState();
+  State<ShopProfile> createState() => _ShopProfileState();
 }
 
-class _MechanicProfilePageState extends State<MechanicProfilePage> {
+class _ShopProfileState extends State<ShopProfile> {
   Future<Map<String, dynamic>?> getMechanicData() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
 
     final doc =
-        await FirebaseFirestore.instance.collection('mechanics').doc(uid).get();
+        await FirebaseFirestore.instance.collection('shops').doc(uid).get();
     if (doc.exists) {
       return doc.data();
     }

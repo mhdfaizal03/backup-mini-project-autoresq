@@ -3,27 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:mini_project_1/mechanic/view/screens/mechanic_home_page.dart';
 import 'package:mini_project_1/mechanic/view/screens/mechanic_notification_page.dart';
 import 'package:mini_project_1/mechanic/view/screens/mechanic_profile_page.dart';
+import 'package:mini_project_1/shop/screens/products_page.dart';
+import 'package:mini_project_1/shop/screens/shop_home.dart';
+import 'package:mini_project_1/shop/screens/shop_notifications.dart';
+import 'package:mini_project_1/shop/screens/shop_profile.dart';
 import 'package:mini_project_1/utils/colors.dart';
 
-class MechanicNavbarPage extends StatefulWidget {
+class ShopNavbarPage extends StatefulWidget {
   int? selectedIndex = 0;
-  MechanicNavbarPage({this.selectedIndex, super.key});
+  ShopNavbarPage({this.selectedIndex, super.key});
 
   @override
-  State<MechanicNavbarPage> createState() => _MechanicNavbarPageState();
+  State<ShopNavbarPage> createState() => _ShopNavbarPageState();
 }
 
-class _MechanicNavbarPageState extends State<MechanicNavbarPage> {
+class _ShopNavbarPageState extends State<ShopNavbarPage> {
   List<Widget> pages = [
-    MechanicHomePage(),
-    MechanicNotificationPage(),
-    MechanicProfilePage(),
+    ShopHome(),
+    ProductsPage(),
+    ShopNotifications(),
+    ShopProfile(),
   ];
 
   List<Map<String, dynamic>> bottomIcons = [
     {
-      'selected': 'assets/nav_icons/home_selected.png',
-      'unselected': 'assets/nav_icons/home_unselected.png',
+      'selected': 'assets/nav_icons/orders_selected.png',
+      'unselected': 'assets/nav_icons/orders_unselected.png',
+    },
+    {
+      'selected': 'assets/nav_icons/products_selected.png',
+      'unselected': 'assets/nav_icons/products_unselected.png',
     },
     {
       'selected': 'assets/nav_icons/notification_selected.png',
@@ -66,10 +75,12 @@ class _MechanicNavbarPageState extends State<MechanicNavbarPage> {
                   width: 30,
                 ),
                 label: index == 0
-                    ? 'Home'
+                    ? 'Orders'
                     : index == 1
-                        ? 'Notification'
-                        : 'Profile',
+                        ? 'Products'
+                        : index == 2
+                            ? 'Notifications'
+                            : 'Profile',
                 icon: Image.asset(
                   bottomIcons[index]['unselected'],
                   width: 30,

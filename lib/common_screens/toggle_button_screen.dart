@@ -34,7 +34,7 @@ class _ToggleButtonScreenState extends State<ToggleButtonScreen> {
           SizedBox(
             height: 20,
           ),
-          _selectedIndex == 0 ? UsersHome() : MechanicView(),
+          _selectedIndex == 0 ? MechanicUsersHome() : MechanicView(),
         ],
       ),
     );

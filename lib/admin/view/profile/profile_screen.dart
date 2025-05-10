@@ -3,7 +3,7 @@ import 'package:mini_project_1/admin/view/profile/mechanic_requests.dart';
 import 'package:mini_project_1/admin/view/profile/terms_and_co.dart';
 import 'package:mini_project_1/admin/view/auth/login_screen.dart';
 import 'package:mini_project_1/admin/view/screens/notification_page.dart';
-import 'package:mini_project_1/common_screens/bottom_navbar_screen.dart';
+import 'package:mini_project_1/admin/view/screens/home/admin_navbar_screen.dart';
 import 'package:mini_project_1/common_screens/toggle_button_screen.dart';
 import 'package:mini_project_1/main.dart';
 
@@ -33,7 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Icons.arrow_forward_ios_rounded,
         size: 18,
       ),
-      'page': (context) => BottomNavbarScreen(
+      'page': (context) => AdminNavbarScreen(
             selectedIndex: 2,
           ),
       'route': false,

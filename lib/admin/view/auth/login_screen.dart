@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/common_screens/bottom_navbar_screen.dart';
+import 'package:mini_project_1/admin/view/screens/home/admin_navbar_screen.dart';
 import 'package:mini_project_1/utils/colors.dart';
 import 'package:mini_project_1/utils/widgets.dart';
 import 'package:mini_project_1/common_screens/toggle_button_screen.dart';
@@ -138,7 +138,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => BottomNavbarScreen(),
+                              builder: (context) => AdminNavbarScreen(),
                             ),
                             (route) => false,
                           );

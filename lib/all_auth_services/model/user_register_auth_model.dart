@@ -15,7 +15,6 @@ class UserRegisterAuthModel {
     required this.location,
   });
 
-  // Convert a UserModel into a Map
   Map<String, dynamic> toMap() {
     return {
       'uid': uid,
@@ -23,11 +22,10 @@ class UserRegisterAuthModel {
       'mobile': mobile,
       'email': email,
       'profileUrl': profileUrl,
-      'location': location
+      'location': location,
     };
   }
 
-  // Convert a Map into a UserModel
   factory UserRegisterAuthModel.fromMap(Map<String, dynamic> map) {
     return UserRegisterAuthModel(
       uid: map['uid'] ?? '',

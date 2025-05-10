@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_1/utils/widgets.dart';
 
-class UsersHome extends StatefulWidget {
-  const UsersHome({super.key});
+class MechanicUsersHome extends StatefulWidget {
+  const MechanicUsersHome({super.key});
 
   @override
-  State<UsersHome> createState() => _UsersHomeState();
+  State<MechanicUsersHome> createState() => _MechanicUsersHomeState();
 }
 
-class _UsersHomeState extends State<UsersHome> {
+class _MechanicUsersHomeState extends State<MechanicUsersHome> {
   @override
   Widget build(BuildContext context) {
-    // Use SingleChildScrollView instead of Expanded
     return SingleChildScrollView(
       child: Column(
         children: List.generate(10, (index) {

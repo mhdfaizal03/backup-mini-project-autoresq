@@ -8,7 +8,7 @@ Color? pickColor(String data) {
       ? color = Colors.red
       : data == 'Mechanic Picked'
           ? color = Colors.orange
-          : data == 'Work in Progress'
+          : data == 'Work In Progress'
               ? color = Colors.amber
               : data == 'On the Way'
                   ? color = primaryColor

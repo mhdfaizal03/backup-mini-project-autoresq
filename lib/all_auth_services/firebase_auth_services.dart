@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mini_project_1/user/models/model/create_request_model.dart';
-import 'package:mini_project_1/user/models/model/user_register_auth_model.dart';
+import 'package:mini_project_1/all_auth_services/model/user_create_request_model.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FirebaseAuthServices {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -12,34 +14,43 @@ class FirebaseAuthServices {
     required String email,
     required String password,
     required String mobile,
-    required String profileUrl,
     required String location,
+    required String role,
   }) async {
     try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      User? user = result.user;
-      if (user != null) {
-        UserRegisterAuthModel newUser = UserRegisterAuthModel(
-            uid: user.uid,
-            name: name,
-            mobile: mobile,
-            email: email,
-            location: location,
-            profileUrl: profileUrl);
+      final uid = userCredential.user!.uid;
 
-        await _firestore.collection('users').doc(user.uid).set(newUser.toMap());
-        return null;
-      } else {
-        return 'User registration failed';
+      Map<String, dynamic> commonData = {
+        'uid': uid,
+        'name': name,
+        'email': email,
+        'mobile': mobile,
+        'location': location,
+        'role': role,
+        'profileUrl': '',
+        'createdAt': Timestamp.now(),
+      };
+
+      if (role == 'User') {
+        await _firestore.collection('users').doc(uid).set(commonData);
+      } else if (role == 'Mechanic') {
+        await _firestore.collection('mechanics').doc(uid).set({
+          ...commonData,
+          'professionalDataCompleted': false,
+        });
+      } else if (role == 'Shop') {
+        await _firestore.collection('shops').doc(uid).set(commonData);
       }
+
+      return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
-    } catch (e) {
-      return 'An unknown error occurred';
     }
   }
 
@@ -49,16 +60,31 @@ class FirebaseAuthServices {
   }) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
-      return null; // Login successful
+      return null;
     } on FirebaseAuthException catch (e) {
-      return e.message ?? 'An unknown error occurred';
-    } catch (e) {
-      return 'Something went wrong. Please try again.';
+      return e.message;
     }
   }
 
-  Future<void> logoutUser() async {
-    await _auth.signOut();
+  Future<String?> getUserRole(String uid) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      if (userDoc.exists) return 'User';
+
+      final mechDoc = await _firestore.collection('mechanics').doc(uid).get();
+      if (mechDoc.exists) return 'Mechanic';
+
+      final shopDoc = await _firestore.collection('shops').doc(uid).get();
+      if (shopDoc.exists) return 'Shop';
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void logoutUser() {
+    _auth.signOut();
   }
 }
 

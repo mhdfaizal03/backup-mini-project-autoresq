@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/mechanic/view/auth/mechanic_login_page.dart';
-import 'package:mini_project_1/user/models/services/firebase_auth_services.dart';
+import 'package:mini_project_1/auth_pages/multi_login.dart';
+import 'package:mini_project_1/all_auth_services/firebase_auth_services.dart';
 import 'package:mini_project_1/utils/colors.dart';
 import 'package:mini_project_1/utils/messages.dart';
 import 'package:mini_project_1/utils/widgets.dart';
@@ -197,7 +197,7 @@ class _ProfileDetailsState extends State<ProfileDetails> {
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MechanicLoginPage(),
+                              builder: (context) => MultiLoginPage(),
                             ),
                             (route) => false,
                           );

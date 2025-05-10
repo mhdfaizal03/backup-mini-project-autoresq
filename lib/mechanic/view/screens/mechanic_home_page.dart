@@ -1,10 +1,11 @@
 import 'dart:ui';
-
-import 'package:another_flushbar/flushbar.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mini_project_1/utils/messages.dart';
+import 'package:mini_project_1/mechanic/models/services/mechanic_firebase_services.dart';
 import 'package:mini_project_1/utils/widgets.dart';
+import 'package:mini_project_1/utils/messages.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MechanicHomePage extends StatefulWidget {
   const MechanicHomePage({super.key});
@@ -14,398 +15,296 @@ class MechanicHomePage extends StatefulWidget {
 }
 
 class _MechanicHomePageState extends State<MechanicHomePage> {
-  static bool isExpanded = false;
-  static int selectedIndex = 0;
+  final _service = FirebaseMechanicService();
   final amountController = TextEditingController();
-  final List<Map<String, dynamic>> transactions = [
-    {
-      'mechanicName': 'AutoFix Garage',
-      'status': 'Pending',
-      'date': '11/02/25',
-      'time': '9.15am',
-      'place': 'Main Road, Eranhipalam, Kozhikode',
-      'phoneNo': '+91 9988776655',
-      'services': ['Battery Replacement', 'Coolant Refill'],
-      'assignedMechanicName': 'Arun K.',
-      'issueText':
-          'My car won’t start and there’s a burnt smell coming from the hood. Possibly an electrical issue.',
-      'location': '221B Baker Street, London, UK 12345',
-      'isPaid': false,
-    },
-    {
-      'mechanicName': 'QuickServe Mechanics',
-      'status': 'Mechanic Picked',
-      'date': '11/02/25',
-      'time': '12.00pm',
-      'place': 'Hilite Mall, Calicut',
-      'phoneNo': '+91 9123456780',
-      'services': ['Flat Tire Fix', 'Brake Fluid Check'],
-      'assignedMechanicName': 'Sajid R.',
-      'issueText':
-          'Rear tire went flat while driving. Brake response also feels sluggish. Needs urgent attention.',
-      'location': '102 Greenway Rd, Calicut, Kerala 673016',
-      'isPaid': false,
-    },
-    {
-      'mechanicName': 'Urban Auto Aid',
-      'status': 'Work in Progress',
-      'date': '11/02/25',
-      'time': '2.45pm',
-      'place': 'Calicut Beach Side',
-      'phoneNo': '+91 9543217890',
-      'services': ['Engine Diagnostics'],
-      'assignedMechanicName': 'Nihal Thomas',
-      'issueText':
-          'Strange knocking noise from engine. Possible fuel injection issue. Diagnostics required.',
-      'location': 'Beach Road, Kozhikode, Kerala 673001',
-      'isPaid': false,
-    },
-    {
-      'mechanicName': 'RoadRescue Services',
-      'status': 'On the Way',
-      'date': '11/02/25',
-      'time': '4.10pm',
-      'place': 'Medical College Road, Kozhikode',
-      'phoneNo': '+91 9078654321',
-      'services': ['Tow Service', 'Jump Start'],
-      'assignedMechanicName': 'Deepak V.',
-      'issueText':
-          'Car battery died while parked overnight. Engine doesn’t crank. Possibly needs towing.',
-      'location': '14 Parkway Ave, Kozhikode, Kerala 673008',
-      'isPaid': true, // Payment made
-    },
-    {
-      'mechanicName': 'SpeedyFix Auto',
-      'status': 'Work Completed',
-      'date': '11/02/25',
-      'time': '6.30pm',
-      'place': 'Kunduparamba, Kozhikode',
-      'phoneNo': '+91 9876543210',
-      'services': ['Oil Change', 'AC Service'],
-      'assignedMechanicName': 'Rajeesh K.',
-      'issueText':
-          'Scheduled maintenance. AC not cooling efficiently and needs oil change as per service schedule.',
-      'location': '23/4 Station Road, Kozhikode, Kerala 673009',
-      'isPaid': true,
-    },
-    {
-      'mechanicName': 'Express Auto Repair',
-      'status': 'Pending',
-      'date': '12/02/25',
-      'time': '10.00am',
-      'place': 'City Center, Kozhikode',
-      'phoneNo': '+91 9812345678',
-      'services': ['Alternator Replacement'],
-      'assignedMechanicName': 'Vishal Kumar',
-      'issueText':
-          'Car battery keeps draining. Suspect alternator issues. Needs urgent diagnosis.',
-      'location': '45 Elm Street, Calicut, Kerala 673016',
-      'isPaid': false,
-    },
-    {
-      'mechanicName': 'SuperFast Auto Care',
-      'status': 'Mechanic Picked',
-      'date': '12/02/25',
-      'time': '11.30am',
-      'place': 'Nadakkavu, Kozhikode',
-      'phoneNo': '+91 9523678412',
-      'services': ['Headlight Replacement', 'Tire Rotation'],
-      'assignedMechanicName': 'Sameer K.',
-      'issueText':
-          'One of the headlights is not working, and tires need rotation as part of regular service.',
-      'location': '17 Sunrise Avenue, Calicut, Kerala 673002',
-      'isPaid': false,
-    },
-    {
-      'mechanicName': 'CarFix Experts',
-      'status': 'Work in Progress',
-      'date': '12/02/25',
-      'time': '3.00pm',
-      'place': 'Mavoor Road, Kozhikode',
-      'phoneNo': '+91 9638527410',
-      'services': ['Brake Pad Replacement'],
-      'assignedMechanicName': 'Anil Joseph',
-      'issueText':
-          'Brakes making a squeaking noise. Mechanic suggested brake pad replacement.',
-      'location': '101 Baker Street, Calicut, Kerala 673001',
-      'isPaid': false,
-    },
-    {
-      'mechanicName': 'ProAuto Services',
-      'status': 'On the Way',
-      'date': '12/02/25',
-      'time': '5.15pm',
-      'place': 'Puthiyara, Kozhikode',
-      'phoneNo': '+91 9958473210',
-      'services': ['Suspension Repair'],
-      'assignedMechanicName': 'Dinesh P.',
-      'issueText':
-          'Noticed excessive bouncing while driving. Possible issue with car suspension.',
-      'location': '29 St. Mary’s Lane, Calicut, Kerala 673005',
-      'isPaid': true,
-    },
-    {
-      'mechanicName': 'AutoTech Solutions',
-      'status': 'Work Completed',
-      'date': '12/02/25',
-      'time': '7.00pm',
-      'place': 'Malaparamba, Kozhikode',
-      'phoneNo': '+91 9987654321',
-      'services': ['Transmission Fluid Change'],
-      'assignedMechanicName': 'Fahad A.',
-      'issueText':
-          'Car struggles to shift gears smoothly. Transmission fluid change was recommended.',
-      'location': '77 King’s Road, Calicut, Kerala 673009',
-      'isPaid': true,
-    },
-    {
-      'mechanicName': 'FastFix Garage',
-      'status': 'Pending',
-      'date': '13/02/25',
-      'time': '8.30am',
-      'place': 'Palayam, Kozhikode',
-      'phoneNo': '+91 9123456789',
-      'services': ['Exhaust System Repair'],
-      'assignedMechanicName': 'Rahul T.',
-      'issueText':
-          'Loud noise from the exhaust. Mechanic recommended checking the exhaust system.',
-      'location': '55 Maple Street, Calicut, Kerala 673003',
-      'isPaid': false,
-    },
-  ];
-  final formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  List<String> status = [];
-  bool isSelected = false;
+  static int selectedIndex = 0;
+  static bool isExpanded = false;
 
   List<String> selectedItems = [
-    "Mechanic Picked",
-    "On the Way",
-    "Work in Progress",
-    "Work Completed",
+    'Mechanic Picked',
+    'Work In Progress',
+    'On the Way',
+    'Work Completed',
   ];
 
-  String? pickedItem;
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filterdDatas = transactions.where(
-      (ind) {
-        if (selectedIndex == 0) {
-          return ind['status'] == 'Pending';
-        } else {
-          return ind['status'] != 'Pending';
-        }
-      },
-    ).toList();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+      child: Column(
+        children: [
+          CustomToggleSwitch(
+            onToggle: (int? index) {
+              setState(() {
+                selectedIndex = index!;
+              });
+            },
+            selectedIndex: selectedIndex,
+            labels: ['Requests', 'Accepted'],
+            switches: 2,
+          ),
+          const SizedBox(height: 20),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('mechanic_requests')
+                .orderBy('createdAt')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: 10,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 10),
+                      child: Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          height: 140,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const Text('No data found');
+              }
 
-    return Form(
-      key: formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5.0),
-        child: Column(
-          children: [
-            CustomToggleSwitch(
-                onToggle: (int? index) {
-                  setState(() {
-                    selectedIndex = index!;
-                  });
-                  print(selectedIndex);
-                },
-                selectedIndex: selectedIndex,
-                labels: ['Requests', 'Accepted'],
-                switches: 2),
-            SizedBox(
-              height: 20,
-            ),
-            filterdDatas.isEmpty
-                ? Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      'No data found',
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: filterdDatas.length,
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final transaction = filterdDatas[index];
-                      String tempPickedItem = transaction['status'];
-                      return InkWell(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                                child: CustomRequestAcceptAlertDialog(
-                                  isPaid: transaction['isPaid'],
-                                  amountController: amountController,
-                                  assignedMechanicName:
-                                      transaction['assignedMechanicName'],
-                                  buttonEnterText:
-                                      transaction['status'] == 'Pending'
-                                          ? 'Accept'
-                                          : 'Save',
-                                  date: transaction['date'],
-                                  isExpanded: isExpanded,
-                                  issueText: transaction['issueText'],
-                                  location: transaction['location'],
-                                  pickStatus: transaction['status'] == 'Pending'
-                                      ? 'No Mechanic Picked'
-                                      : tempPickedItem,
-                                  serviceLength: transaction['services'].length,
-                                  serviceText: transaction['services'],
-                                  specificationsSelectText:
-                                      '${transaction['services'].length} Service selected',
-                                  onChooseStatusAction: () {
-                                    if (transaction['status'] != 'Pending') {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return StatefulBuilder(
-                                            builder: (context, setDialogState) {
-                                              return CustomSpecificationsDialog(
-                                                headerItems: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 20,
-                                                      vertical: 18),
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Text(
-                                                      'Select Status',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                  ),
-                                                ),
-                                                context: context,
-                                                children: List.generate(
-                                                  selectedItems.length,
-                                                  (index) {
-                                                    final item =
-                                                        selectedItems[index];
-                                                    return Column(
-                                                      children: [
-                                                        Divider(),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            setDialogState(() {
-                                                              if (transaction[
-                                                                      'status'] !=
-                                                                  'Work Completed') {
-                                                                tempPickedItem =
-                                                                    selectedItems[
-                                                                        index];
-                                                              }
-                                                            });
-                                                          },
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        12,
-                                                                    vertical:
-                                                                        10),
-                                                            child: Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child: Text(
-                                                                    item,
-                                                                    style: TextStyle(
-                                                                        color: Colors
-                                                                            .grey
-                                                                            .shade700),
-                                                                  ),
-                                                                ),
-                                                                Icon(
-                                                                  tempPickedItem ==
-                                                                          item
-                                                                      ? Icons
-                                                                          .radio_button_checked
-                                                                      : Icons
-                                                                          .radio_button_off,
+              final filtered = snapshot.data!.docs.where((req) {
+                final uid = FirebaseAuth.instance.currentUser!.uid;
+                final data = req.data() as Map<String, dynamic>;
+                final status = data['status'];
+                final assignedId = data.containsKey('assignedMechanicId')
+                    ? data['assignedMechanicId']
+                    : '';
+
+                if (selectedIndex == 0) {
+                  return status == 'Requested' || status == 'Pending';
+                } else {
+                  return status != 'Requested' ||
+                      status != 'Pending' && assignedId == uid;
+                }
+              }).toList();
+
+              if (filtered.isEmpty || snapshot.data!.docs.isEmpty) {
+                return Center(child: const Text('No data found'));
+              }
+
+              return ListView.builder(
+                reverse: true,
+                itemCount: filtered.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final request = filtered[index];
+                  return InkWell(
+                    onTap: () {
+                      amountController.text = request['amount'] ?? 0;
+                      String tempPickedItem = request['status'];
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return CustomRequestAcceptAlertDialog(
+                            isPaid: request['isPaid'] ?? false,
+                            amountController: amountController,
+                            assignedMechanicName:
+                                request['assignedMechanicName'] ?? '',
+                            buttonEnterText: request['status'] == 'Pending' ||
+                                    request['status'] == 'Requested'
+                                ? 'Accept'
+                                : 'Save',
+                            date: request['date'],
+                            isExpanded: isExpanded,
+                            issueText: request['issueText'],
+                            location: request['location'],
+                            pickStatus: request['status'] == 'Pending' ||
+                                    request['status'] == 'Requested'
+                                ? 'No Mechanic Picked'
+                                : tempPickedItem,
+                            serviceLength:
+                                List<String>.from(request['services']).length,
+                            serviceText: List<String>.from(request['services']),
+                            specificationsSelectText:
+                                '${(request['services'] as List).length} Service selected',
+                            onChooseStatusAction: () {
+                              if (request['status'] != 'Pending') {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return StatefulBuilder(
+                                      builder: (context, setDialogState) {
+                                        return CustomSpecificationsDialog(
+                                          headerItems: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 18),
+                                            child: Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                'Select Status',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                          ),
+                                          context: context,
+                                          children: List.generate(
+                                            selectedItems.length,
+                                            (i) {
+                                              final item = selectedItems[i];
+                                              return Column(
+                                                children: [
+                                                  Divider(),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      setDialogState(() {
+                                                        tempPickedItem =
+                                                            selectedItems[i];
+                                                      });
+                                                    },
+                                                    child: Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 12,
+                                                          vertical: 10),
+                                                      child: Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              item,
+                                                              style: TextStyle(
                                                                   color: Colors
-                                                                          .grey[
-                                                                      600],
-                                                                ),
-                                                              ],
+                                                                      .grey
+                                                                      .shade700),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  },
-                                                ),
-                                                actionButton: MaterialButton(
-                                                  height: 60,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.only(
-                                                      bottomLeft:
-                                                          Radius.circular(10),
-                                                      bottomRight:
-                                                          Radius.circular(10),
+                                                          Icon(
+                                                            tempPickedItem ==
+                                                                    item
+                                                                ? Icons
+                                                                    .radio_button_checked
+                                                                : Icons
+                                                                    .radio_button_off,
+                                                            color: Colors
+                                                                .grey[600],
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
-                                                  minWidth: double.infinity,
-                                                  color: Colors.blue[500],
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      transaction['status'] =
-                                                          tempPickedItem;
-                                                    });
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: Text(
-                                                    'Done',
-                                                    style: TextStyle(
-                                                        color: Colors.white),
-                                                  ),
-                                                ),
+                                                ],
                                               );
                                             },
-                                          );
-                                        },
-                                      );
-                                    }
+                                          ),
+                                          actionButton: MaterialButton(
+                                            height: 60,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.only(
+                                                bottomLeft: Radius.circular(10),
+                                                bottomRight:
+                                                    Radius.circular(10),
+                                              ),
+                                            ),
+                                            minWidth: double.infinity,
+                                            color: Colors.blue[500],
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text(
+                                              'Done',
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
                                   },
-                                  onSaveAction: () {
-                                    if (formKey.currentState!.validate()) {
-                                      Navigator.pop(context);
-                                      CustomSnackBar.show(
-                                        context: context,
-                                        message: 'Status updated Successfully',
-                                        color: Colors.green,
-                                        icon: Icons.check_circle,
-                                      );
-                                    }
-                                  },
-                                ),
-                              );
+                                );
+                              }
+                            },
+                            onSaveAction: () async {
+                              if (formKey.currentState?.validate() ?? true) {
+                                final user = FirebaseAuth.instance.currentUser;
+
+                                final data = await FirebaseFirestore.instance
+                                    .collection('mechanics')
+                                    .doc(user!.uid)
+                                    .get();
+                                if (data == null) return;
+
+                                final mechname = data.data();
+
+                                if (request['status'] == 'Pending' ||
+                                    request['status'] == 'Requested') {
+                                  await _service.acceptRequest(
+                                    workShopName: data['workshopName'],
+                                    // status: tempPickedItem,
+                                    requestId: request.id,
+                                    mechanicName: mechname?['name'],
+                                  );
+                                } else {
+                                  await _service.updateStatusAndAmount(
+                                    isPaid:
+                                        request['amount'] == "" ? false : true,
+                                    id: request.id,
+                                    status: tempPickedItem,
+                                    amount: tempPickedItem ==
+                                                'Work Completed' &&
+                                            amountController.text.isNotEmpty
+                                        ? double.tryParse(amountController.text)
+                                        : null,
+                                  );
+                                }
+
+                                amountController.clear();
+                                Navigator.pop(context);
+                                setState(() {});
+                                CustomSnackBar.show(
+                                  context: context,
+                                  message: 'Status updated successfully',
+                                  color: Colors.green,
+                                  icon: Icons.check_circle,
+                                );
+                              }
                             },
                           );
                         },
-                        child: CustomMechaniRequestCards(
-                          mechanicName: transaction['mechanicName'],
-                          status: transaction['status'],
-                          date: transaction['date'],
-                          time: transaction['time'],
-                          phoneNo: transaction['phoneNo'].toString(),
-                          place: transaction['place'],
-                          services: transaction['services'],
-                        ),
                       );
                     },
-                  ),
-          ],
-        ),
+                    child: CustomMechaniRequestCards(
+                      userName: request['userName'] ?? '',
+                      status: request['status'] == 'Requested' ||
+                              request['status'] == 'Requested'
+                          ? 'No Mechanic Picked'
+                          : request['status'] ?? '',
+                      date: request['date'] ?? 'N/A',
+                      time: request['time'] ?? 'N/A',
+                      phoneNo: request['phoneNo'],
+                      place: request['location'],
+                      services: request['services'],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
     );
   }

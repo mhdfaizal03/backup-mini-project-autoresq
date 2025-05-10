@@ -8,15 +8,15 @@ import 'package:mini_project_1/common_screens/toggle_button_screen.dart';
 import 'package:mini_project_1/main.dart';
 import 'package:mini_project_1/utils/colors.dart';
 
-class BottomNavbarScreen extends StatefulWidget {
+class AdminNavbarScreen extends StatefulWidget {
   int? selectedIndex = 0;
-  BottomNavbarScreen({this.selectedIndex, super.key});
+  AdminNavbarScreen({this.selectedIndex, super.key});
 
   @override
-  State<BottomNavbarScreen> createState() => _BottomNavbarScreenState();
+  State<AdminNavbarScreen> createState() => _AdminNavbarScreenState();
 }
 
-class _BottomNavbarScreenState extends State<BottomNavbarScreen> {
+class _AdminNavbarScreenState extends State<AdminNavbarScreen> {
   List<Widget> pages = [
     ToggleButtonScreen(),
     WalletTab(),
